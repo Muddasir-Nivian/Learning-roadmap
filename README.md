@@ -70,7 +70,9 @@ the output.
 
 ## Live Demo
 
-Coming soon — GitHub Pages link will appear here once deployed.
+Live and accessible on any device — no installation required.
+
+https://muddasir-nivian.github.io/Learning-roadmap/
 
 ---
 
