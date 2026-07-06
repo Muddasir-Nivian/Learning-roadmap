@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orrbit — 18-Month Learning Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0; --surface: #ffffff; --surface2: #f0efe9;
+    --border: #e2e0d8; --text: #1a1916; --text2: #6b6960; --text3: #a09e96;
+    --progress-track: #e2e0d8; --radius: 14px; --radius-sm: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 0 0 24px; }
+
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 24px 20px 20px; position: sticky; top: 0; z-index: 100; }
+  .header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+  .header p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+  .overall-progress { margin-top: 16px; }
+  .progress-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .progress-label span:first-child { font-size: 13px; font-weight: 500; color: var(--text2); }
+  .progress-label span:last-child { font-size: 13px; font-weight: 600; font-family: 'DM Mono', monospace; }
+  .progress-bar-track { height: 6px; background: var(--progress-track); border-radius: 99px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--text); border-radius: 99px; transition: width 0.4s ease; }
+  .progress-stats { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+  .progress-stats span { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .content { padding: 16px 16px 0; max-width: 600px; margin: 0 auto; }
+  .month-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+  .month-header { display: flex; align-items: center; gap: 10px; padding: 16px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+  .month-header:active { background: var(--surface2); }
+  .month-arrow { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; color: var(--text3); transition: transform 0.25s ease; flex-shrink: 0; }
+  .month-arrow svg { width: 14px; height: 14px; }
+  .month-card.open .month-arrow { transform: rotate(90deg); }
+  .month-title { flex: 1; font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .month-badge { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--text2); background: var(--surface2); padding: 3px 8px; border-radius: 99px; flex-shrink: 0; }
+  .month-circle { width: 38px; height: 38px; flex-shrink: 0; }
+  .month-circle svg { width: 38px; height: 38px; transform: rotate(-90deg); }
+  .circle-track { fill: none; stroke: var(--progress-track); stroke-width: 3; }
+  .circle-fill { fill: none; stroke: var(--text); stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
+  .circle-text { font-size: 9px; font-family: 'DM Mono', monospace; fill: var(--text); text-anchor: middle; dominant-baseline: middle; transform: rotate(90deg); transform-origin: 19px 19px; }
+  .month-body { display: none; border-top: 1px solid var(--border); padding: 12px; }
+  .month-card.open .month-body { display: block; }
+
+  .week-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; overflow: hidden; }
+  .week-card:last-child { margin-bottom: 0; }
+  .week-header { display: flex; align-items: center; gap: 8px; padding: 11px 12px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+  .week-header:active { opacity: 0.7; }
+  .week-arrow { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: var(--text3); transition: transform 0.2s ease; flex-shrink: 0; }
+  .week-arrow svg { width: 11px; height: 11px; }
+  .week-card.open .week-arrow { transform: rotate(90deg); }
+  .week-title { flex: 1; font-size: 13px; font-weight: 500; }
+  .week-badge { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text3); flex-shrink: 0; }
+  .week-check-icon { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--surface); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .week-check-icon.done { background: var(--text); border-color: var(--text); }
+  .week-check-icon svg { display: none; width: 10px; height: 10px; }
+  .week-check-icon.done svg { display: block; }
+  .week-body { display: none; border-top: 1px solid var(--border); padding: 8px 12px 10px; }
+  .week-card.open .week-body { display: block; }
+
+  .task-item { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .task-item + .task-item { border-top: 1px solid var(--border); }
+  .task-checkbox { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border); background: var(--surface); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; }
+  .task-item.checked .task-checkbox { background: var(--text); border-color: var(--text); }
+  .task-checkbox svg { display: none; width: 10px; height: 10px; }
+  .task-item.checked .task-checkbox svg { display: block; }
+  .task-label { font-size: 13.5px; line-height: 1.5; transition: color 0.15s ease; }
+  .task-item.checked .task-label { color: var(--text3); text-decoration: line-through; text-decoration-color: var(--text3); }
+</style>
+</head>
+<body>
+
+<div class="header" id="timeline-header">
+  <h1>18-Month Learning Roadmap</h1>
+  <p>Track your progress through 76 weeks of learning</p>
+  <div class="overall-progress">
+    <div class="progress-label"><span>Overall Progress</span><span id="overall-pct">0%</span></div>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="overall-bar" style="width:0%"></div></div>
+    <div class="progress-stats">
+      <span id="stat-months">0 / 18 months</span>
+      <span id="stat-weeks">0 / 76 weeks</span>
+      <span id="stat-goals">0 / 0 goals</span>
+    </div>
+  </div>
+</div>
+
+<div class="page active" id="page-timeline">
+  <div class="content" id="roadmap"></div>
+</div>
+
+
+<script>
+const ARROW_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+const CHECK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 18 4 13"></polyline></svg>`;
+
+const data = [
+  { month: 1, title: "Excel Fundamentals + AI Audit Basics", weeks: [
+    { week: 1, tasks: [
+      "[SKIP DEEP] Rows, columns, formatting. SUM, AVERAGE, COUNT, MAX, MIN. Small datasets.",
+      "3 days max — AI generates these instantly. Know what each formula does, not the syntax."
+    ]},
+    { week: 2, tasks: [
+      "[CORE] Conditional formulas — IF, AND, OR. Data validation and dropdowns. Sort and Filter.",
+      "Basic charts. Focus on deciding WHICH chart tells WHICH story — not just how to make them."
+    ]},
+    { week: 3, tasks: [
+      "[SKIP DEEP] VLOOKUP, HLOOKUP, INDEX, MATCH.",
+      "2 days only — AI writes these on demand. Know what they do and when to use them."
+    ]},
+    { week: 4, tasks: [
+      "[CORE] Pivot Tables, Conditional Formatting, Slicers. KPI definition.",
+      "What metrics matter and why.",
+      "Mini project: Sales Dashboard in Excel. AI cannot define your KPIs for you."
+    ]}
+  ]},
+  { month: 2, title: "Advanced Excel + Data Logic + Copilot Audit Practice", weeks: [
+    { week: 5, tasks: [
+      "[ADD NOW] Excel Copilot practice begins.",
+      "Use AI to generate formulas. Audit every output. Document every error. Run alongside SUMIFS and COUNTIFS practice on a real dataset."
+    ]},
+    { week: 6, tasks: [
+      "[SKIP DEEP] Combo charts, Histogram, Trendlines — 1 day reference only.",
+      "Focus on KPIs and metrics in depth.",
+      "AI generates chart types on demand."
+    ]},
+    { week: 7, tasks: [
+      "[CORE] Data cleaning — removing duplicates, handling blanks, text functions.",
+      "This logic is what you use to audit AI-cleaned datasets."
+    ]},
+    { week: 8, tasks: [
+      "[CORE] Final Excel Project — Analyze 1-year company sales data.",
+      "Use AI to assist, then validate every formula, every chart, every insight. Write a note on what AI got wrong."
+    ]}
+  ]},
+  { month: 3, title: "SQL Basics", weeks: [
+    { week: 9, tasks: [
+      "[SKIP DEEP] Intro to databases, Tables, Primary and Foreign keys. Basic SELECT, WHERE, ORDER BY.",
+      "Text-to-SQL AI writes these instantly. Know what a JOIN is and why."
+    ]},
+    { week: 10, tasks: [
+      "[CORE] Aggregate functions — COUNT, SUM, AVG, MIN, MAX. GROUP BY and HAVING.",
+      "Understand the logic deeply so you can audit AI-generated aggregations."
+    ]},
+    { week: 11, tasks: [
+      "[CORE] JOINs — INNER, LEFT, RIGHT, FULL. Subqueries and filtering. Understand what each JOIN type does to the data.",
+      "This is what AI gets wrong most often."
+    ]},
+    { week: 12, tasks: [
+      "[CORE] Practice on public datasets (Kaggle / SQLZoo). Mini project: Analyze eCommerce order data.",
+      "Use AI to write queries. Audit every result."
+    ]}
+  ]},
+  { month: 4, title: "Advanced SQL + Cloud + Governance", weeks: [
+    { week: 13, tasks: [
+      "[FULL TIME] Window functions — RANK(), ROW_NUMBER(), LEAD(), LAG(). Full week.",
+      "This is what separates analysts from AI output. Auditing complex window function logic requires this."
+    ]},
+    { week: 14, tasks: [
+      "[FULL TIME] CTEs and Views.",
+      "[SKIP DEEP] Stored Procedures.",
+      "CTEs are essential for reading and auditing complex AI-generated queries."
+    ]},
+    { week: 15, tasks: [
+      "[ADD NOW] Cloud SQL basics — BigQuery, Snowflake, or AWS Redshift. 1 week. 80% of real data jobs run on cloud databases. Non-negotiable for 2026 job applications."
+    ]},
+    { week: 16, tasks: [
+      "[ADD NOW] Data contracts and schema governance — how data is structured, who owns it, how schema changes cascade.",
+      "Project: Build analytical reports with AI assistance and full audit documentation."
+    ]}
+  ]},
+  { month: 5, title: "Python Basics", weeks: [
+    { week: 17, tasks: [
+      "[SKIP DEEP] Variables, loops, functions, lists, dictionaries.",
+      "AI writes boilerplate instantly.",
+      "Focus on reading and understanding Python — not memorizing syntax."
+    ]},
+    { week: 18, tasks: [
+      "[SKIP DEEP] File handling, basic problem solving.",
+      "Understand what the code does, not how to type it from memory."
+    ]},
+    { week: 19, tasks: [
+      "[CORE] NumPy basics — arrays, indexing, operations.",
+      "Understanding data structures at this level allows you to audit AI-generated data manipulation code."
+    ]},
+    { week: 20, tasks: [
+      "[CORE] Pandas basics — reading CSVs, filtering, cleaning.",
+      "Foundation of Python-based data auditing."
+    ]}
+  ]},
+  { month: 6, title: "Python for Data Wrangling", weeks: [
+    { week: 21, tasks: [
+      "[CORE] Pandas aggregation, groupby, merging datasets.",
+      "When AI merges datasets incorrectly, this knowledge is how you catch it."
+    ]},
+    { week: 22, tasks: [
+      "[CORE] Handling missing values, data types, datetime.",
+      "Data type errors are the most common AI mistake in data pipelines."
+    ]},
+    { week: 23, tasks: [
+      "[CORE] Matplotlib and Seaborn — visualizing data.",
+      "Focus on choosing the right visualization for the right insight, not memorizing plot syntax."
+    ]},
+    { week: 24, tasks: [
+      "[ADD NOW] Mini project: EDA on a real dataset.",
+      "Use AI to generate the EDA script. Audit every chart, every summary stat, every data type assumption. Document what AI missed."
+    ]}
+  ]},
+  { month: 7, title: "Python Advanced + Automation + AI Orchestration", weeks: [
+    { week: 25, tasks: [
+      "[CORE] Regular expressions, API requests — getting live data.",
+      "Understanding APIs is how you connect AI tools to real data sources."
+    ]},
+    { week: 26, tasks: [
+      "[CORE] Automating Excel reports with Python.",
+      "Remove grunt work so you focus on interpretation and insight."
+    ]},
+    { week: 27, tasks: [
+      "[FULL TIME] Statistics with Python — mean, std, correlation, regression basics, causality, A/B testing.",
+      "Statistical thinking cannot be automated.",
+      "This is your primary edge over AI."
+    ]},
+    { week: 28, tasks: [
+      "[ADD NOW] LLM API integration — calling OpenAI or Anthropic API from Python.",
+      "Turns you from AI user to AI orchestrator. Prompt engineering via code — writing structured prompts programmatically.",
+      "Project: Automated data cleaning and reporting system that calls AI and validates output."
+    ]}
+  ]},
+  { month: 8, title: "Power BI Basics", weeks: [
+    { week: 29, tasks: [
+      "[SKIP DEEP] Power BI interface, loading Excel and SQL data.",
+      "Power BI Copilot generates basic dashboards from natural language. Know what each visual is for."
+    ]},
+    { week: 30, tasks: [
+      "[CORE] Data transformations using Power Query. Understanding how data is shaped.",
+      "Before it reaches a visual is critical for catching AI errors."
+    ]},
+    { week: 31, tasks: [
+      "[SKIP DEEP] Building basic visuals — bar, line, maps, cards.",
+      "Focus on knowing when each visual is appropriate, not the click-by-click process."
+    ]},
+    { week: 32, tasks: [
+      "[ADD NOW] Microsoft Fabric awareness.",
+      "New enterprise data platform replacing many Power BI workflows. Know where it fits in 2026 data stacks.",
+      "Project: Basic interactive dashboard using AI assistance, then audit every data connection and visual."
+    ]}
+  ]},
+  { month: 9, title: "Advanced Power BI", weeks: [
+    { week: 33, tasks: [
+      "[FULL TIME] DAX formulas — CALCULATE, FILTER, SUMX.",
+      "AI generates DAX but gets it wrong on complex logic. Auditing DAX output is the real job."
+    ]},
+    { week: 34, tasks: [
+      "[FULL TIME] Time intelligence functions — YTD, MTD, rolling averages.",
+      "These are where AI-generated DAX fails most often — wrong date tables, wrong filter context."
+    ]},
+    { week: 35, tasks: [
+      "[FULL TIME] Metrics governance — which metrics matter, which mislead, and why. Pure human judgment.",
+      "AI cannot define business success for you. Custom visuals and storytelling."
+    ]},
+    { week: 36, tasks: [
+      "[CORE] Final Power BI Project — Business performance dashboard.",
+      "Use AI to build the initial version. Validate every metric, every DAX formula, every data relationship. Write a full audit note."
+    ]}
+  ]},
+  { month: 10, title: "Communication + Storytelling", weeks: [
+    { week: 37, tasks: [
+      "[FULL TIME] Data storytelling fundamentals.",
+      "How to structure a data insight for a non-technical audience. Practice the problem-insight-recommendation framework.",
+      "Take one of your existing dashboards and rewrite the narrative around it as if presenting to a CFO who does not know what a pivot table is."
+    ]},
+    { week: 38, tasks: [
+      "[FULL TIME] English communication for data professionals.",
+      "Presenting numbers with confidence, handling questions you do not know the answer to, and explaining technical limitations in plain language.",
+      "Practice explaining one concept from your learning each day to an imaginary non-technical manager."
+    ]},
+    { week: 39, tasks: [
+      "[FULL TIME] Project — record a full presentation explaining one of your dashboards. Set up your phone or laptop camera.",
+      "Present for 5 to 10 minutes as if you are in a real client meeting.",
+      "Watch it back. Fix the parts where you lose clarity or confidence. Repeat until you are comfortable."
+    ]},
+    { week: 40, tasks: [
+      "[ADD NOW] AI audit write-up practice — for every project you have built so far, add a written section with three parts: what AI produced, what was wrong or missing, and how you fixed it with what reasoning.",
+      "This write-up format is what interviewers in 2026 will ask you to walk them through. Practice writing it clearly and confidently."
+    ]}
+  ]},
+  { month: 11, title: "Portfolio Projects", weeks: [
+    { week: 41, tasks: [
+      "[CORE] Portfolio Project 1 — Sales Forecasting Dashboard. Week 1 of build.",
+      "Start with data collection and cleaning. Use Python with Pandas to clean the raw data. Use AI to assist and document every correction you make to AI output. Define the business question clearly before writing a single line of code or building a single visual."
+    ]},
+    { week: 42, tasks: [
+      "[CORE] Portfolio Project 1 continued.",
+      "Sales Forecasting Dashboard. Build the SQL queries to pull and aggregate the data. Build the Power BI dashboard on top.",
+      "Apply a basic forecasting model in Python. Write the full AI audit note — what AI generated, what was wrong, how you corrected it.",
+      "Record a short 3-minute walkthrough video."
+    ]},
+    { week: 43, tasks: [
+      "[CORE] Portfolio Project 2 — Customer Churn Analysis.",
+      "Clean the dataset, run exploratory analysis in Python.",
+      "Identify the top churn predictors using a decision tree or logistic regression model.",
+      "Visualize findings in Power BI.",
+      "Use AI throughout and document every audit correction.",
+      "Write the business recommendation section — what should the company actually do based on this analysis."
+    ]},
+    { week: 44, tasks: [
+      "[CORE] Portfolio Project 3 — Marketing Campaign Performance Analysis.",
+      "Pull campaign data using SQL.",
+      "Clean and transform in Python.",
+      "Build a performance dashboard in Power BI comparing campaigns by ROI, conversion rate, and cost per acquisition.",
+      "[ADD NOW] This week also finalize your GitHub repository — clean every folder, write a README for each project explaining the business question, tools used, AI audit findings, and key insight.",
+      "Your GitHub must be presentable to a recruiter by the end of this week."
+    ]}
+  ]},
+  { month: 12, title: "ML Foundations", weeks: [
+    { week: 45, tasks: [
+      "[CORE] Introduction to Machine Learning — what it is, how it differs from traditional analytics, supervised vs unsupervised learning.",
+      "Understand where ML fits in business systems and analytics workflows.",
+      "Learn basic ML workflow in Python using libraries like scikit-learn."
+    ]},
+    { week: 46, tasks: [
+      "[CORE] Linear regression from scratch — understanding coefficients, slope, intercept, R-squared, prediction lines.",
+      "What the model is actually doing to your data.",
+      "Build simple regression models using scikit-learn on sales or pricing datasets."
+    ]},
+    { week: 47, tasks: [
+      "[CORE] Logistic regression for classification problems — predicting yes/no outcomes.",
+      "Understand sigmoid function, probability outputs, decision thresholds, and binary classification logic.",
+      "Practice on customer churn datasets and fraud detection examples."
+    ]},
+    { week: 48, tasks: [
+      "[CORE] Feature scaling — StandardScaler, MinMaxScaler and why they matter.",
+      "Train-test split and cross-validation — why you never evaluate a model on training data.",
+      "Introduction to evaluation metrics: accuracy, precision, recall, F1 score, confusion matrix."
+    ]}
+  ]},
+  { month: 13, title: "ML Foundations 2", weeks: [
+    { week: 49, tasks: [
+      "[DEEP] Model evaluation systems — deeper understanding of accuracy vs precision vs recall tradeoffs.",
+      "Learn when metrics become misleading and how bad models can appear accurate in real business situations."
+    ]},
+    { week: 50, tasks: [
+      "[DEEP] Overfitting and underfitting — how models memorize instead of learning.",
+      "Learn validation techniques, error analysis, and how to test whether a model generalizes to unseen data."
+    ]},
+    { week: 51, tasks: [
+      "[DEEP] Bias detection and fairness testing — test whether a model performs equally across different customer groups, regions, demographics, or behaviors.",
+      "Learn how hidden bias enters datasets and predictions."
+    ]},
+    { week: 52, tasks: [
+      "[FULL TIME] Model trust, interpretability, and deployment judgment — identify when models make confident but wrong predictions.",
+      "Learn SHAP/basic interpretability concepts, prediction reliability, and human oversight principles.",
+      "Understand why AI can train models automatically, but humans are still needed to judge whether a model is safe, fair, useful, and appropriate to deploy in the real world."
+    ]}
+  ]},
+  { month: 14, title: "ML Applications + LLM Literacy", weeks: [
+    { week: 53, tasks: [
+      "[CORE] Clustering with K-means — how to segment customers, products, or markets into meaningful groups without predefined labels.",
+      "Understand how to choose the number of clusters using the elbow method.",
+      "Practice on a retail customer dataset."
+    ]},
+    { week: 54, tasks: [
+      "[CORE] Decision Trees and Random Forest — how they make decisions, how to read a decision tree, feature importance scores, and why Random Forest is more reliable than a single tree.",
+      "Practice predicting sales volume or customer churn."
+    ]},
+    { week: 55, tasks: [
+      "[ADD NOW] LLM concepts — what is a transformer model, what is attention, what is RAG (Retrieval Augmented Generation), and what is fine-tuning.",
+      "You do not need to build any of these from scratch. You need to understand them well enough to explain to a company what their AI model needs and how to build a company-specific AI using their own data.",
+      "This is your ultimate goal made technically understandable."
+    ]},
+    { week: 56, tasks: [
+      "[ADD NOW] MLOps awareness — how ML models get packaged, deployed to production, monitored for drift, retrained when they degrade, and versioned over time.",
+      "Understand tools like MLflow at a conceptual level.",
+      "[CORE] Real-world ML project — build a complete end-to-end pipeline predicting sales or customer churn. Data cleaning, feature engineering, model training, validation, bias check, and a written business recommendation presenting what the model found and what the company should do."
+    ]}
+  ]},
+  { month: 15, title: "Automation and Scripting + AI Orchestration", weeks: [
+    { week: 57, tasks: [
+      "[CORE] Automate Power BI dataset refresh using Python and the Power BI REST API.",
+      "Set up scheduled email reports that run automatically and send formatted Excel or PDF outputs to a list of recipients without any manual work."
+    ]},
+    { week: 58, tasks: [
+      "[CORE] API-based automation and workflow tools — learn how n8n or Apache Airflow basics work for scheduling and chaining tasks together.",
+      "Understand how data moves automatically between systems — from a source database, through a transformation, into a dashboard — without any human triggering each step."
+    ]},
+    { week: 59, tasks: [
+      "[ADD NOW] Vector databases introduction — what they are, how they store data as embeddings, and why they are the foundation of company-specific AI systems.",
+      "Set up a basic vector database using ChromaDB or Pinecone.",
+      "Store a set of company documents and retrieve relevant ones using a search query."
+    ]},
+    { week: 60, tasks: [
+      "[ADD NOW] RAG pipeline build — combine a vector database with an LLM API call.",
+      "When a user asks a question, retrieve the relevant company documents from the vector database, pass them to the LLM as context, and get a company-specific answer back.",
+      "This is exactly how you build the company-specific AI you described as your goal.",
+      "Build one working prototype by the end of this week."
+    ]}
+  ]},
+  { month: 16, title: "Cloud and Data Pipelines + Governance", weeks: [
+    { week: 61, tasks: [
+      "[CORE] Cloud fundamentals — AWS or Google Cloud for data.",
+      "Learn S3 or Google Cloud Storage for data storage, BigQuery or Athena for cloud SQL queries, and basic IAM permissions.",
+      "Real data jobs run entirely on cloud infrastructure and you need to navigate it without being confused."
+    ]},
+    { week: 62, tasks: [
+      "[CORE] Build a full ETL pipeline — Extract data from a source (API or database), Transform it using Python and Pandas, Load it into a cloud database, and Visualize it in Power BI. This pipeline should run automatically on a schedule.",
+      "This project demonstrates every skill in your framework working together end to end."
+    ]},
+    { week: 63, tasks: [
+      "[ADD NOW] Data governance frameworks — dbt concepts for data transformation documentation and lineage, understanding what a data contract is, how audit trails are maintained, and why data lineage matters when an AI model produces a wrong output.",
+      "Learn the basics of GDPR and CCPA data compliance requirements. This is the fastest-growing hiring priority in 2026 data roles."
+    ]},
+    { week: 64, tasks: [
+      "[ADD NOW] Bias detection in ML outputs and AI-generated analytics — how to test whether your pipeline treats different customer segments fairly.",
+      "How to document model decisions for regulatory compliance, and how to present data governance decisions to a non-technical leadership team.",
+      "Practice presenting your ETL pipeline and RAG prototype as a business case, not as a technical demo."
+    ]}
+  ]},
+  { month: 17, title: "Internship and Freelance", weeks: [
+    { week: 65, tasks: [
+      "[FULL TIME] Apply for internships on Internshala and LinkedIn.",
+      "Apply for freelance projects on Upwork and Kaggle competitions.",
+      "Lead every single application with your AI auditor identity — not just your tool knowledge. Your cover letter should say what AI cannot do and why you are the person who fills that gap."
+    ]},
+    { week: 66, tasks: [
+      "[FULL TIME] Start your first freelance mini project for a real client or a simulated client scenario.",
+      "Apply the full framework — understand the business question, collect and clean data, use AI to assist, validate every output, build the dashboard, and present the insight with a recommendation. Document everything."
+    ]},
+    { week: 67, tasks: [
+      "[FULL TIME] Reframe every resume bullet point around AI orchestration, not just tool usage.",
+      "Change 'Used Python for data analysis' to 'Used Python to validate AI-generated EDA scripts, catching data type misclassifications across 3 pipeline stages.'",
+      "Change 'Built Power BI dashboards' to 'Audited AI-generated DAX formulas and corrected filter context errors in 2 production dashboards.'",
+      "Every bullet must show the audit and the fix."
+    ]},
+    { week: 68, tasks: [
+      "[FULL TIME] LinkedIn profile deep overhaul.",
+      "Update your headline, about section, and all experience entries to reflect the AI orchestrator identity.",
+      "Add your GitHub link. Add certifications. Your about section should tell the story of an analyst who spent 18 months learning not just to use AI but to govern it, validate it, and make it work for a specific business."
+    ]}
+  ]},
+  { month: 18, title: "Final Preparation", weeks: [
+    { week: 69, tasks: [
+      "[FULL TIME] Mock interview preparation.",
+      "Practice answering: tell me about a time AI gave you a wrong answer and how you caught it. Practice answering: how do you validate an AI-generated SQL query.",
+      "Practice answering: what would you do if a dashboard built by AI showed numbers that seemed off. Rehearse these out loud until they are natural."
+    ]},
+    { week: 70, tasks: [
+      "[FULL TIME] Mock interview preparation.",
+      "Practice full 45-minute mock interviews with a friend or record yourself.",
+      "Cover technical questions on SQL, Python, DAX, and statistics.",
+      "Cover behavioral questions on communication, stakeholder management, and working with ambiguous data.",
+      "Review and fix weak areas."
+    ]},
+    { week: 71, tasks: [
+      "[ADD NOW] Add AI certifications to your LinkedIn and resume — Microsoft Fabric Analytics Engineer Associate, Google Professional Data Engineer, or Azure AI Fundamentals.",
+      "Pick the one most relevant to the companies you are targeting.",
+      "These signal to recruiters that you understand the new data stack, not just the old one."
+    ]},
+    { week: 72, tasks: [
+      "[ADD NOW] Final portfolio document.",
+      "Write one clean PDF that links to all 3 portfolio projects on GitHub, includes a summary of each project covering the business question, tools used, what AI got wrong, and what your insight was, and ends with a section on your RAG pipeline prototype.",
+      "This is what you hand to every recruiter and attach to every job application."
+    ]},
+    { week: "73-76", tasks: [
+      "[FULL TIME] Active job applications and interview rounds. Apply to at least 5 positions per week.",
+      "Follow up on every application after 5 days.",
+      "Continue posting on LinkedIn weekly throughout this period. Every interview that does not result in an offer is a data point — write down what questions you could not answer confidently and fill those gaps immediately."
+    ]}
+  ]}
+];
+
+const TOTAL_TASKS = data.reduce((m, mo) => m + mo.weeks.reduce((w, wk) => w + wk.tasks.length, 0), 0);
+const TOTAL_WEEKS = data.reduce((m, mo) => m + mo.weeks.length, 0);
+
+const taskSchedule = [];
+let dayAccum = 0;
+data.forEach((mo, mi) => {
+  mo.weeks.forEach((wk, wi) => {
+    const daysPerTask = 7 / wk.tasks.length;
+    wk.tasks.forEach((task, ti) => {
+      taskSchedule.push({ mi, wi, ti, label: task, monthTitle: mo.title, weekLabel: `Week ${wk.week}`, startDay: dayAccum, endDay: dayAccum + daysPerTask });
+      dayAccum += daysPerTask;
+    });
+  });
+});
+const TOTAL_DAYS = dayAccum;
+
+function getKey(mi, wi, ti) { return `orrbit_m${mi}_w${wi}_t${ti}`; }
+function loadChecked(mi, wi, ti) { return localStorage.getItem(getKey(mi, wi, ti)) === '1'; }
+function saveChecked(mi, wi, ti, val) {
+  if (val) {
+    localStorage.setItem(getKey(mi, wi, ti), '1');
+    const dk = `orrbit_date_${mi}_${wi}_${ti}`;
+    if (!localStorage.getItem(dk)) localStorage.setItem(dk, todayStr());
+  } else {
+    localStorage.removeItem(getKey(mi, wi, ti));
+    localStorage.removeItem(`orrbit_date_${mi}_${wi}_${ti}`);
+  }
+}
+function getCompletionDate(mi, wi, ti) { return localStorage.getItem(`orrbit_date_${mi}_${wi}_${ti}`); }
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+function updateProgress() {
+  let totalDone = 0, weeksDone = 0, monthsDone = 0;
+  data.forEach((mo, mi) => {
+    let moTasks = 0, moDone = 0;
+    mo.weeks.forEach((wk, wi) => {
+      let wkDone = 0;
+      wk.tasks.forEach((_, ti) => { if (loadChecked(mi, wi, ti)) { wkDone++; moDone++; totalDone++; } moTasks++; });
+      if (wkDone === wk.tasks.length) weeksDone++;
+      const wBadge = document.getElementById(`wbadge-${mi}-${wi}`);
+      if (wBadge) wBadge.textContent = `${wkDone} / ${wk.tasks.length}`;
+      const wIcon = document.getElementById(`wicon-${mi}-${wi}`);
+      if (wIcon) {
+        if (wkDone === wk.tasks.length) { wIcon.classList.add('done'); wIcon.innerHTML = CHECK_SVG; }
+        else { wIcon.classList.remove('done'); wIcon.innerHTML = ''; }
+      }
+    });
+    const moWeeksDone = mo.weeks.filter((wk, wi) => wk.tasks.every((_, ti) => loadChecked(mi, wi, ti))).length;
+    if (moWeeksDone === mo.weeks.length) monthsDone++;
+    const mBadge = document.getElementById(`mbadge-${mi}`);
+    if (mBadge) mBadge.textContent = `${moWeeksDone} / ${mo.weeks.length}`;
+    const circle = document.getElementById(`mcircle-fill-${mi}`);
+    const circleText = document.getElementById(`mcircle-text-${mi}`);
+    if (circle && circleText) {
+      const pct = moTasks > 0 ? moDone / moTasks : 0;
+      const r = 16, circ = 2 * Math.PI * r;
+      circle.style.strokeDasharray = circ;
+      circle.style.strokeDashoffset = circ * (1 - pct);
+      circleText.textContent = Math.round(pct * 100) + '%';
+    }
+  });
+  const pct = TOTAL_TASKS > 0 ? Math.round(totalDone / TOTAL_TASKS * 100) : 0;
+  document.getElementById('overall-pct').textContent = pct + '%';
+  document.getElementById('overall-bar').style.width = pct + '%';
+  document.getElementById('stat-months').textContent = `${monthsDone} / 18 months`;
+  document.getElementById('stat-weeks').textContent = `${weeksDone} / ${TOTAL_WEEKS} weeks`;
+  document.getElementById('stat-goals').textContent = `${totalDone} / ${TOTAL_TASKS} goals`;
+}
+
+function buildRoadmap() {
+  const container = document.getElementById('roadmap');
+  container.innerHTML = '';
+  data.forEach((mo, mi) => {
+    const card = document.createElement('div');
+    card.className = 'month-card'; card.id = `month-${mi}`;
+    const r = 16, circ = 2 * Math.PI * r;
+    card.innerHTML = `
+      <div class="month-header" onclick="toggleMonth(${mi})">
+        <div class="month-arrow">${ARROW_SVG}</div>
+        <div class="month-title">Month ${mo.month} — ${mo.title}</div>
+        <div class="month-badge" id="mbadge-${mi}">0 / ${mo.weeks.length}</div>
+        <div class="month-circle"><svg viewBox="0 0 38 38">
+          <circle class="circle-track" cx="19" cy="19" r="${r}"/>
+          <circle class="circle-fill" id="mcircle-fill-${mi}" cx="19" cy="19" r="${r}" style="stroke-dasharray:${circ};stroke-dashoffset:${circ}"/>
+          <text class="circle-text" id="mcircle-text-${mi}" x="19" y="19">0%</text>
+        </svg></div>
+      </div>
+      <div class="month-body" id="mbody-${mi}"></div>`;
+    container.appendChild(card);
+    const body = document.getElementById(`mbody-${mi}`);
+    mo.weeks.forEach((wk, wi) => {
+      const weekCard = document.createElement('div');
+      weekCard.className = 'week-card'; weekCard.id = `week-${mi}-${wi}`;
+      weekCard.innerHTML = `
+        <div class="week-header" onclick="toggleWeek(${mi}, ${wi})">
+          <div class="week-arrow">${ARROW_SVG}</div>
+          <div class="week-check-icon" id="wicon-${mi}-${wi}"></div>
+          <div class="week-title">Week ${wk.week}</div>
+          <div class="week-badge" id="wbadge-${mi}-${wi}">0 / ${wk.tasks.length}</div>
+        </div>
+        <div class="week-body" id="wbody-${mi}-${wi}"></div>`;
+      body.appendChild(weekCard);
+      const wbody = document.getElementById(`wbody-${mi}-${wi}`);
+      wk.tasks.forEach((task, ti) => {
+        const item = document.createElement('div');
+        item.className = 'task-item' + (loadChecked(mi, wi, ti) ? ' checked' : '');
+        item.id = `task-${mi}-${wi}-${ti}`;
+        item.innerHTML = `<div class="task-checkbox">${CHECK_SVG}</div><div class="task-label">${task}</div>`;
+        item.onclick = () => toggleTask(mi, wi, ti);
+        wbody.appendChild(item);
+      });
+    });
+  });
+  updateProgress();
+}
+
+function toggleMonth(mi) { document.getElementById(`month-${mi}`).classList.toggle('open'); }
+function toggleWeek(mi, wi) { document.getElementById(`week-${mi}-${wi}`).classList.toggle('open'); }
+function toggleTask(mi, wi, ti) {
+  const item = document.getElementById(`task-${mi}-${wi}-${ti}`);
+  const nowChecked = !item.classList.contains('checked');
+  item.classList.toggle('checked', nowChecked);
+  saveChecked(mi, wi, ti, nowChecked);
+  updateProgress();
+}
+
+
+
+
+buildRoadmap();
+</script>
+</body>
+</html>
